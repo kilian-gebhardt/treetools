@@ -748,6 +748,12 @@ def binarize(tree, **params):
     _binarize_tree(tree)
     return tree
 
+def reset_sid(tree, n, start_sid):
+    """Destructively overwrite sentence id
+    """
+    tree.data['sid'] = n + start_sid
+    return tree
+
 
 def add_parser(subparsers):
     """Add an argument parser to the subparsers of treetools.py.
@@ -799,6 +805,8 @@ def add_parser(subparsers):
                             'output of the form key:value ' \
                             '(default: %(default)s)',
                         default=[])
+    parser.add_argument('--reset-sid', action='store_true')
+    parser.add_argument('--start-sid', type=int, default=1)
     parser.add_argument('--split', metavar='HOW',
                         help='split output in several parts ' \
                             'according to a split specification. Syntax: ' \
@@ -880,6 +888,8 @@ def run(args):
                                                      (args.src_opts)):
                     for algorithm in args.trans:
                         tree = globals()[algorithm](tree, **params)
+                    if args.reset_sid:
+                        tree = reset_sid(tree, cnt - 1, args.start_sid)
                     getattr(treeoutput, args.dest_format)(tree, dest_stream,
                                                           **misc.options_dict \
                                                           (args.dest_opts))
